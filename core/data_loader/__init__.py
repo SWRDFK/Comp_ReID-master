@@ -29,7 +29,6 @@ class Loaders:
 
         # dataset
         self.dataset_path = config.dataset_path
-        self.train_use = config.train_use
 
         # batch size
         self.p = config.p
@@ -38,13 +37,11 @@ class Loaders:
         # dataset paths
         self.samples_path = {
             'comp_train': os.path.join(self.dataset_path, 'train_set/'),
-            # test_set A
-            # 'comp_test_query': os.path.join(self.dataset_path, 'query_a/'),
-            # 'comp_test_gallery': os.path.join(self.dataset_path, 'gallery_a/'),
-
-            # test_set B
             'comp_test_query': os.path.join(self.dataset_path, 'query_b/'),
             'comp_test_gallery': os.path.join(self.dataset_path, 'gallery_b/')}
+
+        # label path
+        self.label_path = os.path.join(self.dataset_path, 'train_list.txt')
 
         # load
         self._load()
@@ -53,7 +50,7 @@ class Loaders:
     def _load(self):
 
         # train dataset and iter
-        train_samples, self.num_train, self.samples_per_class = self._get_train_samples('comp_train', self.train_use)
+        train_samples, self.num_train, self.samples_per_class = self._get_train_samples('comp_train', self.label_path)
         self.train_iter = self._get_uniform_iter(train_samples, self.transform_train, self.p, self.k)
 
         # test dataset and loader
@@ -62,10 +59,10 @@ class Loaders:
         self.comp_gallery_loader = self._get_loader(self.comp_gallery_samples, self.transform_test, 128)
 
 
-    def _get_train_samples(self, train_dataset, train_use):
+    def _get_train_samples(self, train_dataset, label_path):
 
         train_samples_path = self.samples_path[train_dataset]
-        samples = Comp_Train_Samples(train_samples_path, train_use)
+        samples = Comp_Train_Samples(train_samples_path, label_path)
 
         return samples, samples.num_train, samples.samples_per_class
 

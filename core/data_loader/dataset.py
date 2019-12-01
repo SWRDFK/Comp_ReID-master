@@ -8,15 +8,15 @@ from tools import os_walk
 
 class Comp_Train_Samples:
 
-    def __init__(self, samples_path, train_use, reorder=True):
+    def __init__(self, samples_path, label_path, reorder=True):
 
         # parameters
         self.samples_path = samples_path
-        self.train_use = train_use
+        self.label_path = label_path
         self.reorder = reorder
 
         # load samples
-        samples = self._load_images_path(self.samples_path, self.train_use)
+        samples = self._load_images_path(self.samples_path)
 
         # reorder person identities
         if self.reorder:
@@ -25,7 +25,7 @@ class Comp_Train_Samples:
         self.samples = samples
 
         # label_dict of train_set
-        self.label_dict = self._make_label_dict("/home/kangning/Competition/train_list.txt")
+        self.label_dict = self._make_label_dict(self.label_path)
 
         # number of training samples
         self.num_train = len(self.samples)
@@ -49,34 +49,25 @@ class Comp_Train_Samples:
         return samples
 
 
-    def _load_images_path(self, folder_dir, train_use):
+    def _load_images_path(self, folder_dir):
 
         samples = []
         root_path, _, files_name = os_walk(folder_dir)
 
-        # get all train data
-        if train_use == 'all':
-            for file_name in files_name:
-                identi_id = self._analysis_file_name(file_name)
-                samples.append([root_path + file_name, identi_id])
-            return samples
+        label_dict = self._make_label_dict(self.label_path)
 
-        # get part train data without one-sample ID
-        elif train_use == 'part':
-            label_dict = self._make_label_dict("/home/kangning/Competition/train_list.txt")
-
-            for key in label_dict:
-                n_pids = len(label_dict[key])
-                # for one sample per identity: select 0 sample
-                if n_pids == 1:
-                    continue
-                # for others: select all samples
-                else:
-                    sel_list = label_dict[key]
-                    for file_name in sel_list:
-                        identi_id = self._analysis_file_name(file_name)
-                        samples.append([root_path + file_name, identi_id])
-            return samples
+        for key in label_dict:
+            n_pids = len(label_dict[key])
+            # for one sample per identity: select 0 sample
+            if n_pids == 1:
+                continue
+            # for others: select all samples
+            else:
+                sel_list = label_dict[key]
+                for file_name in sel_list:
+                    identi_id = self._analysis_file_name(file_name)
+                    samples.append([root_path + file_name, identi_id])
+        return samples
 
 
     def _analysis_file_name(self, file_name):
@@ -84,7 +75,7 @@ class Comp_Train_Samples:
         :param file_name: label format like train/395017260.png 0
         :return:
         '''
-        f = open("/home/kangning/Competition/train_list.txt", "r")
+        f = open(self.label_path, "r")
         lines = f.readlines()
         for line in lines:
             if file_name in line:
@@ -94,7 +85,7 @@ class Comp_Train_Samples:
 
     def _make_label_dict(self, label_path):
         '''
-        :param label_path: format like "/home/kangning/Competition/train_list.txt"
+        :param label_path:
         :return: label_dict (key: ID, value: image_name)
         '''
         label_dict = {}
