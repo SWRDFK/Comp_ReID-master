@@ -130,18 +130,11 @@ class TripletLoss(RankingLoss):
 
 
 class CBLoss(nn.Module):
-	'''
-	Reference: "Class-Balanced Loss Based on Effective Number of Samples"
-	Class Balanced Loss: ((1-beta) / (1-beta^n)) * Loss(labels, logits)
-	where Loss is one of the standard losses used for Neural Networks.
-	Here we use the focal loss
-	'''
 
-	def __init__(self, num_classes, samples_per_class, beta, gamma=2, alpha=None, size_average=True):
+	def __init__(self, num_classes, samples_per_class, gamma=2, alpha=None, size_average=True):
 		super(CBLoss, self).__init__()
 		self.num_classes = num_classes
 		self.samples_per_class = samples_per_class
-		self.beta = beta
 		self.gamma = gamma
 		self.alpha = alpha
 		if isinstance(alpha, (float, int)):
@@ -153,9 +146,9 @@ class CBLoss(nn.Module):
 
 	def forward(self, inputs, targets):
 		if inputs.dim() > 2:
-			inputs = inputs.view(inputs.size(0), inputs.size(1), -1)  # N,C,H,W => N,C,H*W
-			inputs = inputs.transpose(1, 2)  # N,C,H*W => N,H*W,C
-			inputs = inputs.contiguous().view(-1, inputs.size(2))  # N,H*W,C => N*H*W,C
+			inputs = inputs.view(inputs.size(0), inputs.size(1), -1)  	# N,C,H,W => N,C,H*W
+			inputs = inputs.transpose(1, 2)  							# N,C,H*W => N,H*W,C
+			inputs = inputs.contiguous().view(-1, inputs.size(2))		# N,H*W,C => N*H*W,C
 
 		targets = targets.view(-1, 1)
 
@@ -171,18 +164,11 @@ class CBLoss(nn.Module):
 			at = self.alpha.gather(0, targets.data.view(-1))
 			logpt = logpt * at
 
-		# compute weights by effective number of each class
-
-		# dynamic beta
+		# compute weights by the number of each class
 		beta = 1.0 - 1.0 / np.array(self.samples_per_class)
 		effective_num = 1.0 - np.power(beta, self.samples_per_class)
 		weights = (1.0 - beta) / np.array(effective_num)
 		weights = weights / np.sum(weights) * self.num_classes
-
-		# fixed beta
-		# effective_num = 1.0 - np.power(self.beta, self.samples_per_class)
-		# weights = (1.0 - self.beta) / np.array(effective_num)
-		# weights = weights / np.sum(weights) * self.num_classes
 
 		batch_weights = torch.Tensor([weights[i] for i in targets]).cuda()
 		loss = -1 * (1 - pt) ** self.gamma * batch_weights * logpt
