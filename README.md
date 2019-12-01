@@ -43,7 +43,6 @@ Uncomment line 61 in core/base.py and choose the resnet101a_RLL model. Then run
 `python main.py --mode train --model_name densenet161_CBL`
 
 # Test
-You can directly download the trained models from (链接: https://pan.baidu.com/s/153bRn2n1z9nHVEdE3kDgOg 提取码: grwi).
 
 The experiment results are generated at dists/ file. And it will generate two files. One is the distance matrix "model_name".npy and the other is the upload file for this competition "model_file".json.
 
@@ -56,6 +55,7 @@ The experiment results are generated at dists/ file. And it will generate two fi
 
 ## Test ensemble model
 `python main.py --mode ensemble`
+You can also directly download the trained models from (链接: https://pan.baidu.com/s/1eCGHenIsi_eh1rxfbz0-yw 提取码: fzru).
 
 If you want to conduct ensemble experiment, make sure your outputfile has aboving three pretrained models. And the file structure is as:
 
