@@ -15,10 +15,10 @@ def main(config):
 	# make directions
 	make_dirs(base.output_path)
 	make_dirs(base.save_model_path)
-	make_dirs(base.save_logs_path)
+	make_dirs(base.save_log_path)
 
 	# init logger
-	logger = Logger(os.path.join(os.path.join(config.output_path, 'logs/'), 'log.txt'))
+	logger = Logger(os.path.join(os.path.join(os.path.join(config.output_path, config.model_name), 'logs/'), 'log.txt'))
 	logger('\n')
 	logger(config)
 
@@ -57,14 +57,18 @@ def main(config):
 			_, results = train_an_epoch(config, base, loaders)
 			logger('Time: {};  Epoch: {};  {}'.format(time_now(), current_epoch, results))
 
+
 	# test mode
 	elif config.mode == 'test':
 
-		# result submission
-		# test(config, base, loaders)
+		test(config, base, loaders)
 
-		# ensemble learning
+
+	# ensemble mode
+	elif config.mode == 'ensemble':
+
 		ensemble(config, base, loaders)
+
 
 
 if __name__ == '__main__':
@@ -73,18 +77,19 @@ if __name__ == '__main__':
 
 	# overall configuration
 	parser.add_argument('--cuda', type=str, default='cuda')
-	parser.add_argument('--mode', type=str, default='train', help='train or test')
-	parser.add_argument('--output_path', type=str, default='output/4768_one_ibn101a_SA', help='path to save models')
+	parser.add_argument('--mode', type=str, default='train', help='train, test or ensemble')
+	parser.add_argument('--output_path', type=str, default='output', help='path to save models')
+	parser.add_argument('--model_name', type=str, default='resnet101a_SA',
+						help='resnet101a_SA, resnet101a_RLL or densenet161_CBL')
 
 	# dataset configuration
-	parser.add_argument('--dataset_path', type=str, default='/home/kangning/Competition')
-	parser.add_argument('--train_use', type=str, default='part', help='all or part')
+	parser.add_argument('--dataset_path', type=str, default='dataset')
 	parser.add_argument('--image_size', type=int, nargs='+', default=[256, 128])
-	parser.add_argument('--p', type=int, default=16, help='person count in a batch')
+	parser.add_argument('--p', type=int, default=16, help='persons count in a batch')
 	parser.add_argument('--k', type=int, default=4, help='images count of a person in a batch')
 
 	# model configuration
-	parser.add_argument('--pid_num', type=int, default=4768, help='4768 for Comp_official, 4568 for Comp_val')
+	parser.add_argument('--pid_num', type=int, default=4768, help='labels count of train set')
 	parser.add_argument('--margin', type=float, default=0.3, help='margin for the triplet loss with batch hard')
 
 	# train configuration
