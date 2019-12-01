@@ -9,6 +9,7 @@ from bisect import bisect_right
 from tools import os_walk, CrossEntropyLabelSmooth, TripletLoss, CBLoss, RankedListLoss
 from .densenet import *
 from .resnet_factory import *
+from .resnet_SA import *
 
 
 class Base:
@@ -28,8 +29,9 @@ class Base:
 		# Logger Configuration
 		self.max_save_model_num = config.max_save_model_num
 		self.output_path = config.output_path
-		self.save_model_path = os.path.join(self.output_path, 'models/')
-		self.save_logs_path = os.path.join(self.output_path, 'logs/')
+		self.model_name = config.model_name
+		self.save_model_path = os.path.join(self.output_path, os.path.join(self.model_name, 'models/'))
+		self.save_log_path = os.path.join(self.output_path, os.path.join(self.model_name, 'logs/'))
 
 		# Train Configuration
 		self.base_learning_rate = config.base_learning_rate
@@ -48,11 +50,14 @@ class Base:
 
 
 	def _init_model(self):
-		# Resnet factory	depth=18, 34, 50, 101, 152, '50a', '101a'
-		# self.model = ResNet('50a', num_classes=self.pid_num)
-		self.model = ResNet('101a', num_classes=self.pid_num)
 
-		# Densenet
+		# For resnet101a_RLL
+		# self.model = ResNet('101a', num_classes=self.pid_num)
+
+		# For resnet101a_SA
+		self.model = ResNet_SA('101a', num_classes=self.pid_num)
+
+		# For densenet161_CBL
 		# self.model = densenet161(num_classes=self.pid_num, pretrained=True)
 
 		self.model = nn.DataParallel(self.model).to(self.device)
@@ -61,7 +66,7 @@ class Base:
 	def _init_criterion(self):
 		self.ide_criterion = CrossEntropyLabelSmooth(self.pid_num)
 		self.triplet_criterion = TripletLoss(self.margin, 'euclidean')
-		self.cb_criterion = CBLoss(self.pid_num, self.samples_per_class, beta=0.9999, gamma=2)
+		self.cb_criterion = CBLoss(self.pid_num, self.samples_per_class, gamma=2)
 		self.ranked_criterion = RankedListLoss(margin=1.3, alpha=2.0, tval=1.0)
 
 

@@ -17,39 +17,39 @@ def train_an_epoch(config, base, loaders):
 		imgs, pids = imgs.to(base.device), pids.to(base.device)
 
 		# forward
+		# features, cls_score = base.model(imgs, config.model_name)
 		features, cls_score = base.model(imgs)
 
-		# use ide_loss and triplet_loss at the same time, but can replace them with cb_loss and ranked_loss, respectively.
+		# RLL: replace triplet_loss with ranked_list_loss.
+		if config.model_name == 'resnet101a_RLL':
+			ide_loss = base.ide_criterion(cls_score, pids)
+			triplet_loss = base.ranked_criterion(features, pids)
 
-		# # Baseline
-		# ide_loss = base.ide_criterion(cls_score, pids)
-		# triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
-        #
-		# # ide_loss = base.cb_criterion(cls_score, pids)
-		# # triplet_loss = base.ranked_criterion(features, pids)
-        #
-		# loss = ide_loss + triplet_loss
-		# acc = accuracy(cls_score, pids, [1])[0]
+			loss = ide_loss + triplet_loss
+			acc = accuracy(cls_score, pids, [1])[0]
 
 
-		# Spatial Attention
-		ide_loss1 = base.ide_criterion(cls_score[0], pids)
-		ide_loss2 = base.ide_criterion(cls_score[1], pids)
-		ide_loss3 = base.ide_criterion(cls_score[2], pids)
-		ide_loss4 = base.ide_criterion(cls_score[3], pids)
+		# Spatial Attention: use ide_loss and triplet_loss.
+		elif config.model_name == 'resnet101a_SA':
+			ide_loss1 = base.ide_criterion(cls_score[0], pids)
+			ide_loss2 = base.ide_criterion(cls_score[1], pids)
+			ide_loss3 = base.ide_criterion(cls_score[2], pids)
+			ide_loss4 = base.ide_criterion(cls_score[3], pids)
 
-		ide_loss = ide_loss1 + ide_loss2 + ide_loss3 + ide_loss4
-		triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
+			ide_loss = ide_loss1 + ide_loss2 + ide_loss3 + ide_loss4
+			triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
 
-		# cb_loss1 = base.cb_criterion(cls_score[0], pids)
-		# cb_loss2 = base.cb_criterion(cls_score[1], pids)
-		# cb_loss3 = base.cb_criterion(cls_score[2], pids)
-		# cb_loss4 = base.cb_criterion(cls_score[3], pids)
-		# ide_loss = cb_loss1 + cb_loss2 + cb_loss3 + cb_loss4
-		# triplet_loss = base.ranked_criterion(features, pids)
+			loss = ide_loss + triplet_loss
+			acc = accuracy(cls_score[3], pids, [1])[0]
 
-		loss = ide_loss + triplet_loss
-		acc = accuracy(cls_score[3], pids, [1])[0]
+
+		# CBL: replace ide_loss with cb_loss.
+		elif config.model_name == 'densenet161_CBL':
+			ide_loss = base.cb_criterion(cls_score, pids)
+			triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
+
+			loss = ide_loss + triplet_loss
+			acc = accuracy(cls_score, pids, [1])[0]
 
 
 		# optimize

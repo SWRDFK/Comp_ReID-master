@@ -1,9 +1,10 @@
+import os
 import torch
 import numpy as np
 from tools import CatMeter, cosine_dist, euclidean_dist, re_ranking
 
 
-def generate_jsonfile(distmat, dataset, topk):
+def generate_jsonfile(config, distmat, dataset, topk, json_name):
 	"""
 	Args:
 		distmat (numpy.ndarray): distance matrix of shape (num_query, num_gallery).
@@ -26,18 +27,14 @@ def generate_jsonfile(distmat, dataset, topk):
 
 	for q_idx in range(num_q):
 		qimg_path, qpid = query[q_idx]
-		# choose test_set A or B
-		# query_name = qimg_path.replace('/home/kangning/Competition/query_a/', '')
-		query_name = qimg_path.replace('/home/kangning/Competition/query_b/', '')
+		query_name = qimg_path.replace(os.path.join(config.dataset_path, 'query_b'), '')
 
 		g_num = 0
 		glist = []
 		glist.append(query_name)
 		for g_idx in indices[q_idx, :]:
 			gimg_path, gpid = gallery[g_idx]
-			# choose test_set A or B
-			# gallery_name = gimg_path.replace('/home/kangning/Competition/gallery_a/', '')
-			gallery_name = gimg_path.replace('/home/kangning/Competition/gallery_b/', '')
+			gallery_name = gimg_path.replace(os.path.join(config.dataset_path, 'gallery_b'), '')
 
 			if g_num < topk:
 				glist.append(gallery_name)
@@ -52,9 +49,9 @@ def generate_jsonfile(distmat, dataset, topk):
 	import json
 
 	json = json.dumps(result_dict)
-	jsonfile = 'TestB_result_4768_one_ibn101a_SA_rerank+4768_one_ibn101a_rankedloss_rerank+4768_one_dense161_cbloss_beta_rerank0.48.json'
+	jsonfile = json_name + '.json'
 
-	with open(jsonfile, 'w') as f:
+	with open(os.path.join('jsons', jsonfile), 'w') as f:
 		f.write(json)
 
 	print("Successfully generate jsonfile: {}".format(jsonfile))
@@ -78,8 +75,12 @@ def test(config, base, loaders):
 				# compute feautres
 				images, _ = data
 
-				# features = base.model(images)
-				features, _ = base.model(images)      # For Spatial Attention
+				if config.model_name == 'resnet101a_SA':
+					# features, _ = base.model(images, config.model_name)
+					features, _ = base.model(images)
+				else:
+					# features = base.model(images, config.model_name)
+					features = base.model(images)
 
 				# save as query features
 				if loader_id == 0:
@@ -96,10 +97,10 @@ def test(config, base, loaders):
 	# distance = -cosine_dist(query_features, gallery_features).data.cpu().numpy()
 	# distance = euclidean_dist(query_features, gallery_features).data.cpu().numpy()
 	distance = re_ranking(query_features, gallery_features)
-	np.save("TestB_distance_4768_one_ibn101a_SA_rerank.npy", distance)
+	np.save(os.path.join('dists', config.model_name + '.npy'), distance)
 
 	# generate submission file containing top-200 ranks
-	generate_jsonfile(distance, _datasets, 200)
+	generate_jsonfile(config, distance, _datasets, 200, config.model_name)
 
 
 def ensemble(config, base, loaders):
@@ -109,15 +110,11 @@ def ensemble(config, base, loaders):
 	# init dataset
 	_datasets = [loaders.comp_query_samples.samples, loaders.comp_gallery_samples.samples]
 
-	# test_set A
-	# d1 = np.load("/home/kangning/AI-baseline-master/distance_4768_one_ibn101a_SA_rerank.npy")
-	# d2 = np.load("/home/kangning/AI-baseline-master/distance_4768_one_ibn101a_rankedloss_rerank.npy")
-	# d3 = np.load("/home/kangning/AI-baseline-master/distance_4768_one_dense161_cbloss_beta_rerank.npy")
-
 	# test_set B
-	d1 = np.load("/home/kangning/AI-baseline-master/TestB_distance_4768_one_ibn101a_SA_rerank.npy")
-	d2 = np.load("/home/kangning/AI-baseline-master/TestB_distance_4768_one_ibn101a_rankedloss_rerank.npy")
-	d3 = np.load("/home/kangning/AI-baseline-master/TestB_distance_4768_one_dense161_cbloss_beta_rerank.npy")
+	d1 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
+	d2 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
+	d3 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
 
 	distance = d1 + d2 + 0.48 * d3
-	generate_jsonfile(distance, _datasets, 200)
+
+	generate_jsonfile(config, distance, _datasets, 200, 'ensemble')
