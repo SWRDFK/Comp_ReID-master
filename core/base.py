@@ -55,7 +55,7 @@ class Base:
 		# self.model = ResNet('101a', num_classes=self.pid_num)
 
 		# For resnet101a_SA
-		self.model = ResNet_SA('101a', num_classes=self.pid_num)
+		# self.model = ResNet_SA('101a', num_classes=self.pid_num)
 
 		# For densenet161_CBL
 		# self.model = densenet161(num_classes=self.pid_num, pretrained=True)
