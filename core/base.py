@@ -30,6 +30,8 @@ class Base:
 		self.max_save_model_num = config.max_save_model_num
 		self.output_path = config.output_path
 		self.model_name = config.model_name
+		self.save_dist_path = os.path.join(self.output_path, 'dists/')
+		self.save_json_path = os.path.join(self.output_path, 'jsons/')
 		self.save_model_path = os.path.join(self.output_path, os.path.join(self.model_name, 'models/'))
 		self.save_log_path = os.path.join(self.output_path, os.path.join(self.model_name, 'logs/'))
 
@@ -40,7 +42,14 @@ class Base:
 
 		# Init Model
 		self._init_device()
-		self._init_model()
+
+		if self.model_name == "densenet161_CBL":
+			self._init_model1()
+		if self.model_name == "resnet101a_RLL":
+			self._init_model2()
+		if self.model_name == "resnet101a_SA":
+			self._init_model3()
+
 		self._init_criterion()
 		self._init_optimizer()
 
@@ -49,17 +58,21 @@ class Base:
 		self.device = torch.device('cuda')
 
 
-	def _init_model(self):
-
-		# For resnet101a_RLL
-		# self.model = ResNet('101a', num_classes=self.pid_num)
-
-		# For resnet101a_SA
-		# self.model = ResNet_SA('101a', num_classes=self.pid_num)
-
+	def _init_model1(self):
 		# For densenet161_CBL
-		# self.model = densenet161(num_classes=self.pid_num, pretrained=True)
+		self.model = densenet161(num_classes=self.pid_num, pretrained=True)
+		self.model = nn.DataParallel(self.model).to(self.device)
 
+
+	def _init_model2(self):
+		# For resnet101a_RLL
+		self.model = ResNet('101a', num_classes=self.pid_num)
+		self.model = nn.DataParallel(self.model).to(self.device)
+
+
+	def _init_model3(self):
+		# For resnet101a_SA
+		self.model = ResNet_SA('101a', num_classes=self.pid_num)
 		self.model = nn.DataParallel(self.model).to(self.device)
 
 

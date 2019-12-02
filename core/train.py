@@ -20,16 +20,23 @@ def train_an_epoch(config, base, loaders):
 		# features, cls_score = base.model(imgs, config.model_name)
 		features, cls_score = base.model(imgs)
 
-		# RLL: replace triplet_loss with ranked_list_loss.
-		if config.model_name == 'resnet101a_RLL':
+		# CBL: use cb_loss and triplet_loss.
+		if config.model_name == 'densenet161_CBL':
+			ide_loss = base.cb_criterion(cls_score, pids)
+			triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
+
+			loss = ide_loss + triplet_loss
+			acc = accuracy(cls_score, pids, [1])[0]
+
+		# RLL: use ide_loss and ranked_list_loss.
+		elif config.model_name == 'resnet101a_RLL':
 			ide_loss = base.ide_criterion(cls_score, pids)
 			triplet_loss = base.ranked_criterion(features, pids)
 
 			loss = ide_loss + triplet_loss
 			acc = accuracy(cls_score, pids, [1])[0]
 
-
-		# Spatial Attention: use ide_loss and triplet_loss.
+		# SA: use ide_loss and triplet_loss.
 		elif config.model_name == 'resnet101a_SA':
 			ide_loss1 = base.ide_criterion(cls_score[0], pids)
 			ide_loss2 = base.ide_criterion(cls_score[1], pids)
@@ -41,16 +48,6 @@ def train_an_epoch(config, base, loaders):
 
 			loss = ide_loss + triplet_loss
 			acc = accuracy(cls_score[3], pids, [1])[0]
-
-
-		# CBL: replace ide_loss with cb_loss.
-		elif config.model_name == 'densenet161_CBL':
-			ide_loss = base.cb_criterion(cls_score, pids)
-			triplet_loss = base.triplet_criterion(features, features, features, pids, pids, pids)
-
-			loss = ide_loss + triplet_loss
-			acc = accuracy(cls_score, pids, [1])[0]
-
 
 		# optimize
 		base.optimizer.zero_grad()

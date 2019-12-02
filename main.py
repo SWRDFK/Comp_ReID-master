@@ -1,7 +1,6 @@
 import argparse
 import os
 import ast
-import torchvision.transforms as transforms
 from core import Loaders, Base, train_an_epoch, test, ensemble
 from tools import make_dirs, Logger, os_walk, time_now
 
@@ -14,6 +13,8 @@ def main(config):
 
 	# make directions
 	make_dirs(base.output_path)
+	make_dirs(base.save_dist_path)
+	make_dirs(base.save_json_path)
 	make_dirs(base.save_model_path)
 	make_dirs(base.save_log_path)
 
@@ -80,7 +81,7 @@ if __name__ == '__main__':
 	parser.add_argument('--mode', type=str, default='train', help='train, test or ensemble')
 	parser.add_argument('--output_path', type=str, default='output', help='path to save models')
 	parser.add_argument('--model_name', type=str, default='resnet101a_SA',
-						help='resnet101a_SA, resnet101a_RLL or densenet161_CBL')
+						help='densenet161_CBL, resnet101a_RLL or resnet101a_SA')
 
 	# dataset configuration
 	parser.add_argument('--dataset_path', type=str, default='dataset')

@@ -4,7 +4,7 @@ import numpy as np
 from tools import CatMeter, cosine_dist, euclidean_dist, re_ranking
 
 
-def generate_jsonfile(config, distmat, dataset, topk, json_name):
+def generate_jsonfile(config, base, distmat, dataset, topk, json_name):
 	"""
 	Args:
 		distmat (numpy.ndarray): distance matrix of shape (num_query, num_gallery).
@@ -51,7 +51,7 @@ def generate_jsonfile(config, distmat, dataset, topk, json_name):
 	json = json.dumps(result_dict)
 	jsonfile = json_name + '.json'
 
-	with open(os.path.join('jsons', jsonfile), 'w') as f:
+	with open(os.path.join(base.save_json_path, jsonfile), 'w') as f:
 		f.write(json)
 
 	print("Successfully generate jsonfile: {}".format(jsonfile))
@@ -97,10 +97,11 @@ def test(config, base, loaders):
 	# distance = -cosine_dist(query_features, gallery_features).data.cpu().numpy()
 	# distance = euclidean_dist(query_features, gallery_features).data.cpu().numpy()
 	distance = re_ranking(query_features, gallery_features)
-	np.save(os.path.join('dists', config.model_name + '.npy'), distance)
+
+	np.save(os.path.join(base.save_dist_path, config.model_name + '.npy'), distance)
 
 	# generate submission file containing top-200 ranks
-	generate_jsonfile(config, distance, _datasets, 200, config.model_name)
+	generate_jsonfile(config, base, distance, _datasets, 200, config.model_name)
 
 
 def ensemble(config, base, loaders):
@@ -111,10 +112,10 @@ def ensemble(config, base, loaders):
 	_datasets = [loaders.comp_query_samples.samples, loaders.comp_gallery_samples.samples]
 
 	# test_set B
-	d1 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
-	d2 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
-	d3 = np.load(os.path.join('dists', "resnet101a_SA.npy"))
+	dist1 = np.load(os.path.join(base.save_dist_path, 'densenet161_CBL.npy'))
+	dist2 = np.load(os.path.join(base.save_dist_path, 'resnet101a_RLL.npy'))
+	dist3 = np.load(os.path.join(base.save_dist_path, 'resnet101a_SA.npy'))
 
-	distance = d1 + d2 + 0.48 * d3
+	ensemble_dist = dist1 + dist2 + 0.48 * dist3
 
-	generate_jsonfile(config, distance, _datasets, 200, 'ensemble')
+	generate_jsonfile(config, base, ensemble_dist, _datasets, 200, 'ensemble')
