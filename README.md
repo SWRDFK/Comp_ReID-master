@@ -24,14 +24,14 @@ Code for 2019 NAIC Person ReID Stage.1
 # Train
 You can train the following models respectively.
 
-## Train model A (resnet101a_SA)
-Run `python main.py --mode train --model_name resnet101a_SA`
+## Train model A (densenet161_CBL)
+Run `python main.py --mode train --model_name densenet161_CBL`
 
 ## Train model B (resnet101a_RLL)
 Run `python main.py --mode train --model_name resnet101a_RLL`
 
-## Train model C (densenet161_CBL)
-Run `python main.py --mode train --model_name densenet161_CBL`
+## Train model C (resnet101a_SA)
+Run `python main.py --mode train --model_name resnet101a_SA`
 
 # Test
 You can download dists, jsons and models from the following url and put it under the folder `$Comp_ReID-master/output`  
