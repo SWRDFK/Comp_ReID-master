@@ -1,5 +1,6 @@
 # Comp_ReID-master
-Code for 2019 NAIC Person ReID
+Code for 2019 NAIC Person ReID Stage.1
+
 # Installation
 * python==3.6.9
 * torch==0.4.1
@@ -10,79 +11,47 @@ Code for 2019 NAIC Person ReID
 # Preparation
 1. Run `git clone https://github.com/SWRDFK/Comp_ReID-master.git`
 2. Prepare dataset: 
-    1. download the competition datasets into Comp_ReID-master/dataset, which contains 4 subfiles:
-    
-        -- Comp_ReID-master/dataset/train_set
-        
-        -- Comp_ReID-master/dataset/train_list.txt
-        
-        -- Comp_ReID-master/dataset/query_b
-        
-        -- Comp_ReID-master/dataset/gallary_b
-    2. make sure the data folder like the following structure:  
-    `Comp_ReID-master/dataset`
-    3. ResNet101_ibn_a pretrained(链接: https://pan.baidu.com/s/1PpcKc2Ji5joZPxG8TE2DgQ 提取码: 7e69) model.
+    download the competition datasets and make sure the directory as following:    
+    &emsp;|—— dataset/  
+    &emsp;|&emsp;&emsp;&ensp;|—— gallery_b/  
+    &emsp;|&emsp;&emsp;&ensp;|—— query_b/  
+    &emsp;|&emsp;&emsp;&ensp;|—— train_set/  
+    &emsp;|&emsp;&emsp;&ensp;|—— train_list.txt  
+3. Download ResNet101_ibn_a pretrained models from the following url and put it under the folder  
+`$Comp_ReID-master/core/pretrained`  
+   链接: https://pan.baidu.com/s/1935MdSvnS1t6qo9TH-nXcQ 提取码: jk3d
 
 # Train
-We train the following models respectively.
+You can train the following models respectively.
 
 ## Train model A (resnet101a_SA)
-
-Uncomment line 58 in core/base.py and choose the resnet101a_SA model. Then run
-
-`python main.py --mode train --model_name resnet101a_SA`
+Run `python main.py --mode train --model_name resnet101a_SA`
 
 ## Train model B (resnet101a_RLL)
-
-Uncomment line 55 in core/base.py and choose the resnet101a_RLL model. Then run
-
-`python main.py --mode train --model_name resnet101a_RLL`
+Run `python main.py --mode train --model_name resnet101a_RLL`
 
 ## Train model C (densenet161_CBL)
-
-Uncomment line 61 in core/base.py and choose the resnet101a_RLL model. Then run
-
-`python main.py --mode train --model_name densenet161_CBL`
+Run `python main.py --mode train --model_name densenet161_CBL`
 
 # Test
+You can download dists, jsons and models from the following url and put it under the folder `$Comp_ReID-master/output`  
+链接: https://pan.baidu.com/s/1sNZf2WD895KsFkh6HrhkSA 提取码: x5k6
 
-The experiment results are generated at dists/ file. And it will generate two files. One is the distance matrix "model_name".npy and the other is the upload file for this competition "model_file".json.
+After training, you can test with your trainde models or directly use our models.  
 
-## Test model A (resnet101a_SA)
-`python main.py --mode test --model_name resnet101a_SA`
-## Test model B (resnet101a_RLL)
-`python main.py --mode test --model_name resnet101a_RLL`
-## Test model C (densenet161_CBL)
-`python main.py --mode test --model_name densenet161_CBL`
+After testing, it will generate two files for each model:  
+&emsp;1. the distance matrix between query and gallery named `"model_name".npy`, saved in `$Comp_ReID-master/output/dists`.  
+&emsp;2. the uploading json file for evaluation named `"model_file".json`, saved in `$Comp_ReID-master/output/jsons`.  
 
-## Test ensemble model
-`python main.py --mode ensemble`
-You can also directly download the trained models from (链接: https://pan.baidu.com/s/1eCGHenIsi_eh1rxfbz0-yw 提取码: fzru).
+## Test model A (densenet161_CBL)  
+Run `python main.py --mode test --model_name densenet161_CBL`
 
-If you want to conduct ensemble experiment, make sure your outputfile has aboving three pretrained models. And the file structure is as:
+## Test model B (resnet101a_RLL)  
+Run `python main.py --mode test --model_name resnet101a_RLL`
 
-./output
+## Test model C (resnet101a_SA)  
+Run `python main.py --mode test --model_name resnet101a_SA`
 
-    --densenet161_CBL
-  
-        --logs
-    
-        --models
-    
-    --resnet101a_RLL
-  
-        --logs
-    
-        --models
-    
-    -- resnet101a_SA
-  
-        --logs
-    
-        --models
-        
-We also provide our ensemble results as:
-
-dists(链接: https://pan.baidu.com/s/1TukolUhlI8R8VhNxvlsB8g 提取码: bxi4)
-
-jsons(链接: https://pan.baidu.com/s/103ct1HvzQk8k3v2h8XNwFA 提取码: 9xrd)
+# Ensemble
+You can test the ensemble model by using three distance matrices and get the generated `ensemble.json` which saved in `$Comp_ReID-master/output/jsons`.  
+Run `python main.py --mode ensemble`
