@@ -27,14 +27,14 @@ def generate_jsonfile(config, base, distmat, dataset, topk, json_name):
 
 	for q_idx in range(num_q):
 		qimg_path, qpid = query[q_idx]
-		query_name = qimg_path.replace(os.path.join(config.dataset_path, 'query_b'), '')
+		query_name = qimg_path.replace(os.path.join(config.dataset_path, 'query_b/'), '')
 
 		g_num = 0
 		glist = []
 		glist.append(query_name)
 		for g_idx in indices[q_idx, :]:
 			gimg_path, gpid = gallery[g_idx]
-			gallery_name = gimg_path.replace(os.path.join(config.dataset_path, 'gallery_b'), '')
+			gallery_name = gimg_path.replace(os.path.join(config.dataset_path, 'gallery_b/'), '')
 
 			if g_num < topk:
 				glist.append(gallery_name)
