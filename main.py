@@ -61,6 +61,9 @@ def main(config):
 
 	# test mode
 	elif config.mode == 'test':
+		# resume from the resume_test_epoch
+		if config.resume_test_epoch >= 0:
+			base.resume_model(config.resume_test_epoch)
 
 		test(config, base, loaders)
 
@@ -102,6 +105,9 @@ if __name__ == '__main__':
 	parser.add_argument('--total_train_epochs', type=int, default=120)
 	parser.add_argument('--auto_resume_training_from_lastest_steps', type=ast.literal_eval, default=True)
 	parser.add_argument('--max_save_model_num', type=int, default=1, help='0 for max num is infinit')
+
+	# test configuration
+	parser.add_argument('--resume_test_epoch', type=int, default=119, help='-1 for no resuming')
 
 
 	# main
