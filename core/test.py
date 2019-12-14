@@ -76,10 +76,8 @@ def test(config, base, loaders):
 				images, _ = data
 
 				if config.model_name == 'resnet101a_SA':
-					# features, _ = base.model(images, config.model_name)
 					features, _ = base.model(images)
 				else:
-					# features = base.model(images, config.model_name)
 					features = base.model(images)
 
 				# save as query features
